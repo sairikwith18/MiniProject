@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Meals On Wheels</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            fetch("/get_bus_routes")
+                .then(response => response.json())
+                .then(data => {
+                    let busRouteDropdown = document.getElementById("bus_route");
+                    let stopDropdown = document.getElementById("bus_stop");
+
+                    for (let route in data) {
+                        let option = document.createElement("option");
+                        option.value = route;
+                        option.textContent = "Route " + route;
+                        busRouteDropdown.appendChild(option);
+                    }
+
+                    busRouteDropdown.addEventListener("change", function () {
+                        let selectedRoute = this.value;
+                        stopDropdown.innerHTML = ""; 
+
+                        if (selectedRoute) {
+                            data[selectedRoute].forEach(stop => {
+                                let option = document.createElement("option");
+                                option.value = stop;
+                                option.textContent = stop;
+                                stopDropdown.appendChild(option);
+                            });
+                        }
+                    });
+
+                    // Restore previously selected values from localStorage (if any)
+                    let savedRoute = localStorage.getItem("selectedBusRoute");
+                    let savedStop = localStorage.getItem("selectedBusStop");
+
+                    if (savedRoute) {
+                        busRouteDropdown.value = savedRoute;
+                        busRouteDropdown.dispatchEvent(new Event("change"));
+                    }
+                    if (savedStop) {
+                        stopDropdown.value = savedStop;
+                    }
+                })
+                .catch(error => console.error("Error loading bus routes:", error));
+        });
+
+        function saveTravelDetails() {
+            let busRoute = document.getElementById("bus_route").value;
+            let busStop = document.getElementById("bus_stop").value;
+
+            if (!busRoute || !busStop) {
+                alert("Please select a valid bus route and stop.");
+                return false;
+            }
+
+            // Store in localStorage
+            localStorage.setItem("selectedBusRoute", busRoute);
+            localStorage.setItem("selectedBusStop", busStop);
+
+            alert("Travel details saved successfully!");
+            return true; // Allow form submission
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h2>Select Your Travel Route</h2>
+        
+        <form method="POST" action="/save_travel_details" onsubmit="return saveTravelDetails()">
+            <label for="bus_route">Select Bus Route:</label>
+            <select id="bus_route" name="bus_number" required>
+                <option value="" disabled selected>Choose a Route</option>
+            </select>
+
+            <label for="bus_stop">Select Your Stop:</label>
+            <select id="bus_stop" name="bus_stop" required>
+                <option value="" disabled selected>Choose a Stop</option>
+            </select>
+
+            <button type="submit">Save Travel Details</button>
+        </form>
+    </div>
+</body>
+</html>

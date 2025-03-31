@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu - Meals On Wheels</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='menu.css') }}">
+    <script>
+        const restaurantMenus = {
+            "Mehfil": [
+                { name: "Biryani", price: 250 },
+                { name: "Pasta", price: 180 },
+                { name: "Shawarma", price: 120 }
+            ],
+            "Pista House": [
+                { name: "Haleem", price: 300 },
+                { name: "Biryani", price: 270 },
+                { name: "Kebabs", price: 220 }
+            ],
+            "Paradise": [
+                { name: "Biryani", price: 260 },
+                { name: "Chicken 65", price: 200 },
+                { name: "Grill Chicken", price: 350 }
+            ],
+            "Shah Ghouse": [
+                { name: "Mutton Biryani", price: 280 },
+                { name: "Chicken Fry", price: 230 },
+                { name: "Falooda", price: 150 }
+            ],
+            "Alpha Hotel": [
+                { name: "Egg Biryani", price: 200 },
+                { name: "Fried Rice", price: 170 },
+                { name: "Tandoori", price: 300 }
+            ],
+            "Bawarchi": [
+                { name: "Special Biryani", price: 290 },
+                { name: "Butter Chicken", price: 250 },
+                { name: "Naan", price: 50 }
+            ],
+            "Cafe Bahar": [
+                { name: "Mutton Korma", price: 310 },
+                { name: "Veg Pulao", price: 180 },
+                { name: "Paneer Tikka", price: 220 }
+            ],
+            "Kritunga": [
+                { name: "Gongura Chicken", price: 270 },
+                { name: "Mutton Fry", price: 320 },
+                { name: "Ragi Sangati", price: 150 }
+            ],
+            "Chutneys": [
+                { name: "Idli", price: 80 },
+                { name: "Dosa", price: 100 },
+                { name: "Vada", price: 90 }
+            ],
+            "Minerva Coffee Shop": [
+                { name: "Masala Dosa", price: 120 },
+                { name: "Upma", price: 110 },
+                { name: "Filter Coffee", price: 70 }
+            ]
+        };
+
+        
+    function showMenu(restaurant) {
+        localStorage.setItem("selectedRestaurant", restaurant);  // Store selected restaurant
+
+        const menuContainer = document.getElementById("menu-container");
+        const menuTitle = document.getElementById("menu-title");
+        const menuList = document.getElementById("menu-items");
+
+        menuTitle.innerText = "Menu - " + restaurant;
+        menuList.innerHTML = "";
+        
+        restaurantMenus[restaurant].forEach(item => {
+            menuList.innerHTML += `
+                <li>
+                    ${item.name} - ₹${item.price} 
+                    <button onclick="addToCart('${item.name}', ${item.price})">Add to Cart</button>
+                </li>
+            `;
+        });
+
+        menuContainer.style.display = "block";
+    }
+
+
+
+        function addToCart(item, price) {
+            let cart = JSON.parse(localStorage.getItem("cart")) || [];
+            cart.push({ name: item, price: price });
+            localStorage.setItem("cart", JSON.stringify(cart));
+            alert(item + " added to cart!");
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h2>Select a Restaurant</h2>
+        <div class="restaurant-list">
+            {% for restaurant in ["Mehfil", "Pista House", "Paradise", "Shah Ghouse", "Alpha Hotel", "Bawarchi", "Cafe Bahar", "Kritunga", "Chutneys", "Minerva Coffee Shop"] %}
+                <div class="restaurant" onclick="showMenu('{{ restaurant }}')">
+                    <img src="{{ url_for('static', filename='images/' + restaurant | replace(' ', '_') + '.jpg') }}" alt="{{ restaurant }}">
+                    <p>{{ restaurant }}</p>
+                </div>
+            {% endfor %}
+        </div>
+
+        <div id="menu-container" class="menu" style="display: none;">
+            <h3 id="menu-title">Menu</h3>
+            <ul id="menu-items"></ul>
+        </div>
+
+        <!-- View Cart and Go to Payment Buttons -->
+        <div class="bottom-buttons">
+            <button onclick="window.location.href='/cart'">View Cart</button>
+            <button onclick="window.location.href='/payment'">Go to Payment</button>
+        </div>
+    </div>
+</body>
+</html>

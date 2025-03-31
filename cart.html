@@ -1,0 +1,98 @@
+<!DOCTYPE html> 
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cart - Meals On Wheels</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='cart.css') }}">
+    <script>
+        let cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+        function displayCart() {
+            const cartList = document.getElementById("cart-items");
+            const totalAmount = document.getElementById("total-amount");
+
+            cartList.innerHTML = "";
+            let total = 0;
+
+            if (cart.length === 0) {
+                cartList.innerHTML = "<p>Your cart is empty.</p>";
+                totalAmount.innerText = "₹0";
+                return;
+            }
+
+            cart.forEach((item, index) => {
+                total += item.price;
+                cartList.innerHTML += `
+                    <li>
+                        ${item.name} - ₹${item.price} 
+                        <button onclick="removeFromCart(${index})">Remove</button>
+                    </li>
+                `;
+            });
+
+            totalAmount.innerText = "₹" + total;
+        }
+
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            localStorage.setItem("cart", JSON.stringify(cart));
+            displayCart();
+        }
+
+        function showPaymentForm() {
+            if (cart.length === 0) {
+                alert("Your cart is empty. Please add items before proceeding.");
+                return;
+            }
+            document.getElementById("payment-form").style.display = "block";
+        }
+
+        function processPayment(event) {
+            event.preventDefault();
+
+            let busStop = localStorage.getItem("selectedBusStop");
+            let restaurant = localStorage.getItem("selectedRestaurant");
+
+            if (!busStop || !restaurant) {
+                alert("Bus stop or restaurant not selected. Please select a restaurant and travel route before ordering.");
+                window.location.href = "/menu";
+                return;
+            }
+
+            alert("Payment Successful! Redirecting to route map...");
+            localStorage.removeItem("cart"); // Clear cart after payment
+            
+            // Redirect to map.html with bus stop and restaurant parameters
+            window.location.href = `/map?bus_stop=${encodeURIComponent(busStop)}&restaurant=${encodeURIComponent(restaurant)}`;
+        }
+
+        window.onload = displayCart;
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h2>Your Cart</h2>
+        <ul id="cart-items"></ul>
+        <h3>Total: <span id="total-amount">₹0</span></h3>
+
+        <button onclick="showPaymentForm()">Proceed to Payment</button>
+
+        <div id="payment-form" style="display: none;">
+            <h3>Enter Card Details</h3>
+            <form onsubmit="processPayment(event)">
+                <label for="card-number">Card Number:</label>
+                <input type="text" id="card-number" required maxlength="16">
+
+                <label for="expiry">Expiry Date:</label>
+                <input type="text" id="expiry" placeholder="MM/YY" required>
+
+                <label for="cvv">CVV:</label>
+                <input type="text" id="cvv" required maxlength="3">
+
+                <button type="submit">Pay Now</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
